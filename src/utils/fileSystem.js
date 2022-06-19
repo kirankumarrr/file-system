@@ -4,15 +4,16 @@ import { FOLDER, FILE } from './constants';
 const search = (arr, entry) => {
   let no = 0;
 
-  arr[entry.parentID].children.forEach(elementId => {
-    if (
-      arr[elementId].name.includes(entry.name) &&
-      arr[elementId].type === entry.type
-    ) {
-      console.log(elementId);
-      no++;
-    }
-  });
+  if (arr && entry.parentID && entry.parentID in arr)
+    arr[entry.parentID]?.children.forEach(elementId => {
+      if (
+        arr[elementId].name.includes(entry.name) &&
+        arr[elementId].type === entry.type
+      ) {
+        console.log(elementId);
+        no++;
+      }
+    });
   return no;
 };
 
@@ -43,7 +44,24 @@ export const AddEntry = (data, newEntry) => {
   }
 
   const id = md5(newEntry.path + newEntry.type);
+
   data[id] = newEntry;
+
+  const initialFolderDoesNotExist = !(data && newEntry.parentID && newEntry.parentID in data)
+
+  if (initialFolderDoesNotExist) {
+    data[newEntry.parentID] = {
+      type: '__folder__',
+      name: 'root',
+      path: '/',
+      size: 0,
+      date: newEntry.date,
+      creatorName: newEntry.creatorName,
+      parentPath: null,
+      parentID: null,
+      children: []
+    }
+  }
   data[newEntry.parentID].children.push(id);
   localStorage.setItem('fileSystem', JSON.stringify(data));
 
